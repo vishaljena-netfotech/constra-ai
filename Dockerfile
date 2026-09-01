@@ -38,8 +38,11 @@ RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
 
 COPY package.json pnpm-lock.yaml ./
 COPY patches ./patches
+# NOTE: intentionally NOT --prod here. The Jenkinsfile runs
+# `drizzle-kit migrate` (a devDependency) against this same image, so
+# devDependencies must be present. Trade-off: slightly larger image.
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prod
+    pnpm install --frozen-lockfile
 
 # --chown sets ownership as part of the copy itself (cheap, no extra
 # filesystem walk) — this replaces both the old recursive chown and
