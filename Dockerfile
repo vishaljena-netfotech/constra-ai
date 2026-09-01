@@ -38,12 +38,12 @@ COPY patches ./patches
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod
 
+# --chown sets ownership as part of the copy itself (cheap, no extra
+# filesystem walk) — this replaces both the old recursive chown and
+# the recursive chmod, which were the source of the slow builds.
 COPY --from=build --chown=app:app /app/dist ./dist
 COPY --from=build --chown=app:app /app/drizzle ./drizzle
 COPY --chown=app:app drizzle.config.ts ./
-
-# node_modules stays root-owned but world-readable — avoids a slow recursive chown
-RUN chmod -R o+rX node_modules
 
 USER app
 
