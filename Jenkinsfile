@@ -17,28 +17,22 @@
 // (`usermod -aG docker jenkins && systemctl restart jenkins`) and must own
 // /opt/constra-ai. No SSH credential needed — this all runs on the Jenkins
 // agent itself.
-
 pipeline {
     agent any
-
     options {
         timestamps()
         disableConcurrentBuilds()
         buildDiscarder(logRotator(numToKeepStr: '20'))
     }
-
     environment {
         DEPLOY_PATH = '/opt/constra-ai'
     }
-
     stages {
-
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-
         stage('Install, typecheck & test (ephemeral Node container)') {
             steps {
                 sh """
@@ -52,7 +46,6 @@ pipeline {
                 """
             }
         }
-
         stage('Place env file') {
             steps {
                 withCredentials([file(credentialsId: 'constraai-env-production', variable: 'ENV_FILE')]) {
@@ -60,13 +53,11 @@ pipeline {
                 }
             }
         }
-
         stage('Build image') {
             steps {
                 sh 'docker compose -p constra-ai build'
             }
         }
-
         stage('Run DB migrations') {
             steps {
                 sh """
@@ -75,13 +66,11 @@ pipeline {
                 """
             }
         }
-
         stage('Deploy (docker compose up, scoped to this project only)') {
             steps {
                 sh 'docker compose -p constra-ai up -d --remove-orphans'
             }
         }
-
         stage('Post-deploy health check') {
             steps {
                 sh """
@@ -99,7 +88,6 @@ pipeline {
             }
         }
     }
-
     post {
         always {
             // Clean workspace copy of the secret env file; the real one stays
