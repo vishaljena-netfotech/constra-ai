@@ -18,7 +18,13 @@ export const startLogin = () => {
   const redirectUri = `${window.location.origin}/api/oauth/callback`;
 
   const nonce = crypto.randomUUID();
-  document.cookie = `${OAUTH_STATE_COOKIE}=${nonce}; Path=/; Max-Age=600; SameSite=None; Secure`;
+  // The Secure attribute is silently dropped by browsers over plain HTTP,
+  // and SameSite=None is rejected outright without Secure. Fall back to
+  // SameSite=Lax on non-HTTPS origins (e.g. demo deployments served by
+  // bare IP) so the cookie is actually set; use the strict pair on HTTPS.
+  const isSecureContext = window.location.protocol === "https:";
+  const cookieAttrs = isSecureContext ? "SameSite=None; Secure" : "SameSite=Lax";
+  document.cookie = `${OAUTH_STATE_COOKIE}=${nonce}; Path=/; Max-Age=600; ${cookieAttrs}`;
   const state = encodeOAuthState({ redirectUri, nonce });
 
   const url = new URL(`${oauthPortalUrl}/app-auth`);
