@@ -38,11 +38,13 @@ COPY patches ./patches
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --prod
 
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/drizzle ./drizzle
-COPY drizzle.config.ts ./
+COPY --from=build --chown=app:app /app/dist ./dist
+COPY --from=build --chown=app:app /app/drizzle ./drizzle
+COPY --chown=app:app drizzle.config.ts ./
 
-RUN chown -R app:app /app
+# node_modules stays root-owned but world-readable — avoids a slow recursive chown
+RUN chmod -R o+rX node_modules
+
 USER app
 
 # App auto-selects a free port starting at $PORT; keep them aligned.
