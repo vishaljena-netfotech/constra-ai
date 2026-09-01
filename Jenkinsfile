@@ -55,7 +55,19 @@ pipeline {
         }
         stage('Build image') {
             steps {
-                sh 'docker compose -p constra-ai build'
+                // VITE_-prefixed vars need to reach `docker compose build` as
+                // build args (see docker-compose.yml / Dockerfile) because
+                // Vite compiles them into the client bundle at build time.
+                // set -a exports every var sourced from .env.production into
+                // this shell's environment so compose's ${VAR} substitution
+                // can pick them up; everything else in the file is unused
+                // here and stays runtime-only via env_file in later stages.
+                sh '''
+                    set -a
+                    . ./.env.production
+                    set +a
+                    docker compose -p constra-ai build
+                '''
             }
         }
         stage('Run DB migrations') {

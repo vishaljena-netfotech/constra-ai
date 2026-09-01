@@ -18,7 +18,25 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 FROM base AS build
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# No secrets are needed at build time; the app reads env vars at runtime.
+# Real secrets (DATABASE_URL, JWT_SECRET, etc.) are NOT needed at build time
+# and stay runtime-only via .env.production (excluded from this build context
+# by .dockerignore). VITE_-prefixed vars are the exception: Vite compiles them
+# directly into the client JS bundle at build time, so they must be present
+# here as build args, not just at container runtime. They end up visible in
+# the browser bundle regardless, so passing them as build args (which land in
+# `docker history`) doesn't reduce their existing exposure.
+ARG VITE_OAUTH_PORTAL_URL
+ARG VITE_APP_ID
+ARG VITE_FRONTEND_FORGE_API_URL
+ARG VITE_FRONTEND_FORGE_API_KEY
+ARG VITE_ANALYTICS_ENDPOINT
+ARG VITE_ANALYTICS_WEBSITE_ID
+ENV VITE_OAUTH_PORTAL_URL=$VITE_OAUTH_PORTAL_URL \
+    VITE_APP_ID=$VITE_APP_ID \
+    VITE_FRONTEND_FORGE_API_URL=$VITE_FRONTEND_FORGE_API_URL \
+    VITE_FRONTEND_FORGE_API_KEY=$VITE_FRONTEND_FORGE_API_KEY \
+    VITE_ANALYTICS_ENDPOINT=$VITE_ANALYTICS_ENDPOINT \
+    VITE_ANALYTICS_WEBSITE_ID=$VITE_ANALYTICS_WEBSITE_ID
 RUN pnpm run build
 
 # ---------- Production runtime ----------
