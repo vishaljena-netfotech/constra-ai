@@ -55,19 +55,15 @@ pipeline {
         }
         stage('Build image') {
             steps {
-                // VITE_-prefixed vars need to reach `docker compose build` as
-                // build args (see docker-compose.yml / Dockerfile) because
-                // Vite compiles them into the client bundle at build time.
-                // set -a exports every var sourced from .env.production into
-                // this shell's environment so compose's ${VAR} substitution
-                // can pick them up; everything else in the file is unused
-                // here and stays runtime-only via env_file in later stages.
-                sh '''
-                    set -a
-                    . ./.env.production
-                    set +a
-                    docker compose -p constra-ai build
-                '''
+                // VITE_-prefixed vars need to reach the build as build args
+                // (see docker-compose.yml / Dockerfile) because Vite compiles
+                // them into the client bundle at build time. --env-file lets
+                // compose read .env.production directly for ${VAR}
+                // substitution in docker-compose.yml — no shell sourcing
+                // involved, so values with spaces (e.g. OWNER_NAME) parse
+                // correctly and nothing is echoed to the console log the way
+                // `. ./.env.production` would under command tracing.
+                sh 'docker compose --env-file .env.production -p constra-ai build'
             }
         }
         stage('Run DB migrations') {
