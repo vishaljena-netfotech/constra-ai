@@ -1,0 +1,16 @@
+node_modules
+dist
+.git
+.gitignore
+.env
+.env.*
+.project-config.json
+.manus
+test-results
+playwright-report
+*.log
+.DS_Store
+docs
+tests
+**/*.test.ts
+**/*.spec.ts

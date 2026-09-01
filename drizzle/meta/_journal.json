@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "mysql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "5",
+      "when": 1786292730086,
+      "tag": "0000_early_spot",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1786300526768,
+      "tag": "0001_unknown_reptil",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1786728413443,
+      "tag": "0002_overrated_mantis",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1787853894858,
+      "tag": "0003_greedy_reaper",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1787856176007,
+      "tag": "0004_stiff_the_leader",
+      "breakpoints": true
+    }
+  ]
+}

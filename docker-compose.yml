@@ -1,0 +1,48 @@
+name: constra-ai
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: constra-ai:local
+    container_name: constra-ai
+    restart: unless-stopped
+    ports:
+      # 7030 chosen because it's free on this shared host — do not change to
+      # a port already used by another stack (see README-DEPLOY.md audit).
+      - "${HOST_PORT:-7030}:3000"
+    env_file:
+      - .env.production
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+    # Resource caps so this app can't starve the other production services
+    # already running on this shared host.
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 1g
+    mem_limit: 1g
+    cpus: 1.0
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:3000/', r => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "5"
+    networks:
+      - constra-ai-net
+
+# Dedicated bridge network, isolated from the CRM/HMS/VerifyChain/EMS stacks
+# already running on this host — no shared network, no cross-container access.
+networks:
+  constra-ai-net:
+    name: constra-ai-net
+    driver: bridge
