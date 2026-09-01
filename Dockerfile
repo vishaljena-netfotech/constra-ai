@@ -31,6 +31,9 @@ RUN groupadd -r app && useradd -r -g app -d /app app
 
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
+# Point corepack/node's cache/home at /tmp (always world-writable) so the
+# non-root "app" user never needs write access to /app itself.
+ENV HOME=/tmp
 RUN corepack enable && corepack prepare pnpm@10.15.1 --activate
 
 COPY package.json pnpm-lock.yaml ./
